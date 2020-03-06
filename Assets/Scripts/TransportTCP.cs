@@ -84,7 +84,7 @@ public class TransportTCP : MonoBehaviour
     // json 보내기 테스트 성공
     private void handle_send()
     {
-        JsonClass json = new JsonClass(this.gameObject.transform, State.Idle, Vector3.zero);
+        JsonClass json = new JsonClass(this.gameObject.transform, State.Idle, Vector3.zero, .0f);
         string jsonData = jsonmgr.ObjectToJson(json);
 
         int i = Encoding.Default.GetByteCount(jsonData);

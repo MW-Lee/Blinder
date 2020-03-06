@@ -8,77 +8,166 @@ using UnityEngine;
 using System.IO;
 using System.Text;
 
+//public class PlayerController : MonoBehaviour
+//{
+//    // 이동, 회전 관련 변수.
+//    private float horizontal = 0.0f;
+
+//    private float vertical = 0.0f;
+
+//    private float rotate = 0.0f;
+
+//    public float moveSpeed = 0.0f;
+
+//    public float rotSpeed = 0.0f;
+
+//    public Vector3 vDir = new Vector3();
+
+//    private new Transform transform = null;
+
+//    // 시간 관련 변수.
+//    private float oldTime = 0.2f;
+//    private float curTime = 0.0f;
+
+//    // 서버 관련 변수.
+//    JsonMgr jsonMgr = new JsonMgr();
+
+//    State state = State.Idle;
+
+//    protected string dataPath;
+
+//    private void Start()
+//    {
+//        transform = GetComponent<Transform>();
+
+//        vDir = Vector3.zero;    
+
+//        dataPath = Application.dataPath + "/Resources/Json";
+//    }
+
+//    private void Update()
+//    {
+//        curTime += Time.deltaTime;
+
+//        horizontal = Input.GetAxis("Horizontal");
+//        vertical = Input.GetAxis("Vertical");
+//        rotate = Input.GetAxis("Mouse X");
+
+//        Vector3 moveDir = (Vector3.forward * vertical) + (Vector3.right * horizontal);
+
+//        transform.Translate(moveDir.normalized * moveSpeed * Time.deltaTime);
+
+//        transform.Rotate(Vector3.up * rotate * rotSpeed * Time.deltaTime);
+
+//        state = horizontal != 0 || vertical != 0 ? State.Walk : State.Idle;
+
+//        vDir = new Vector3(horizontal, 0, vertical);
+
+//        if (curTime >= oldTime)
+//        {
+//            curTime -= oldTime;
+//            //JsonOverWirte();
+//        }
+//    }
+
+
+//}
+
 public class PlayerController : MonoBehaviour
 {
-    // 이동, 회전 관련 변수.
-    private float horizontal = 0.0f;
+    #region 변수
 
-    private float vertical = 0.0f;
+    //
+    // 기본 이동 관련 변수
+    //
+    public Vector3 vDir;
+    public float fMoveSpeed;
+    public float fRotSpeed;
 
-    private float rotate = 0.0f;
+    private Transform TF;
+    private State sState;
+    private float fHorizontal;
+    private float fVertical;
+    private float fRotate;
 
-    public float moveSpeed = 0.0f;
+    //
+    // 시간 관련 변수
+    //
+    private float fOldTime;
+    private float fCurTime;
 
-    public float rotSpeed = 0.0f;
+    //
+    // 서버 관련 변수
+    //
+    private JsonMgr jsonMgr;
+    private string sDataPath;
 
-    public Vector3 vDir = new Vector3();
+    #endregion
 
-    private new Transform transform = null;
+    /////////////////////////////////////////////////////////////////////////////////
 
-    // 시간 관련 변수.
-    private float oldTime = 0.2f;
-    private float curTime = 0.0f;
+    #region 함수
 
-    // 서버 관련 변수.
-    JsonMgr jsonMgr = new JsonMgr();
+    private void JsonOverWirte()
+    {
+        JsonClass json = new JsonClass(this.gameObject.transform, sState, vDir, fRotate);
+        string jsonData = jsonMgr.ObjectToJson(json);
+        jsonMgr.CreateJsonFile(sDataPath, "DisPlayer", jsonData);
 
-    State state = State.Idle;
+        //byte[] data = Encoding.UTF8.GetBytes(jsonData);
 
-    protected string dataPath;
+        //TransportTCP.instance.Send(data, data.Length);
+    }
+
+    #endregion
+
+    /////////////////////////////////////////////////////////////////////////////////
+
+    #region 실행
 
     private void Start()
     {
-        transform = GetComponent<Transform>();
+        TF = GetComponent<Transform>();
+        vDir = Vector3.zero;
+        fHorizontal = .0f;
+        fVertical = .0f;
+        fRotate = .0f;
+        fMoveSpeed = 1.0f;
+        fRotSpeed = 30.0f;
 
-        vDir = Vector3.zero;    
+        sDataPath = Application.dataPath + "/Resources/Json";
 
-        dataPath = Application.dataPath + "/Resources/Json";
+        fOldTime = .2f;
+        fCurTime = .0f;
+
+        jsonMgr = new JsonMgr();
+        sState = State.Idle;
     }
 
     private void Update()
     {
-        curTime += Time.deltaTime;
+        fCurTime += Time.deltaTime;
 
-        horizontal = Input.GetAxis("Horizontal");
-        vertical = Input.GetAxis("Vertical");
-        rotate = Input.GetAxis("Mouse X");
+        fHorizontal = Input.GetAxis("Horizontal");
+        fVertical = Input.GetAxis("Vertical");
+        fRotate = Input.GetAxis("Mouse X");
 
-        Vector3 moveDir = (Vector3.forward * vertical) + (Vector3.right * horizontal);
+        Vector3 moveDir = (Vector3.forward * fVertical) + (Vector3.right * fHorizontal);
 
-        transform.Translate(moveDir.normalized * moveSpeed * Time.deltaTime, Space.Self);
+        transform.Translate(moveDir.normalized * fMoveSpeed * Time.deltaTime, Space.Self);
 
-        transform.Rotate(Vector3.up * rotate * rotSpeed * Time.deltaTime);
+        transform.Rotate(Vector3.up * fRotate * fRotSpeed * Time.deltaTime);
 
-        state = horizontal != 0 || vertical != 0 ? State.Walk : State.Idle;
+        sState = fHorizontal != 0 || fVertical != 0 ? State.Walk : State.Idle;
 
-        vDir = new Vector3(horizontal, 0, vertical);
+        vDir = new Vector3(fHorizontal, 0, fVertical);
 
-        if (curTime >= oldTime)
+        if (fCurTime >= fOldTime)
         {
-            curTime -= oldTime;
-            //JsonOverWirte();
-            //print(dataPath);
+            fCurTime -= fOldTime;
+            JsonOverWirte();
         }
     }
 
-    //private void JsonOverWirte()
-    //{
-    //    JsonClass json = new JsonClass(this.gameObject.transform, state, vDir);
-    //    string jsonData = jsonMgr.ObjectToJson(json);
-    //    //jsonMgr.CreateJsonFile(dataPath, "DisPlayer", jsonData);
-
-    //    byte[] data = Encoding.UTF8.GetBytes(jsonData);
-
-    //    TransportTCP.instance.Send(data, data.Length);
-    //}
+    #endregion
 }
