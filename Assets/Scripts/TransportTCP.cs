@@ -12,7 +12,7 @@ public class TransportTCP : MonoBehaviour
 {
     private Socket m_socket;
 
-    string ipAdress = "192.168.43.35";
+    string ipAdress = "127.0.0.1";
 
     private int port = 31400;
 
@@ -88,11 +88,12 @@ public class TransportTCP : MonoBehaviour
         JsonClass json = new JsonClass(this.gameObject.transform, State.Idle, Vector3.zero);
         string jsonData = jsonmgr.ObjectToJson(json);
 
-        int i = Encoding.Default.GetByteCount(jsonData);
+        // 해더를 추가한 만큼 데이터를 보내야 하기때문에 아래쪽에서 연산한 temp.nSize 만큼 크기를 보내주기로 변경.
+        //int i = Encoding.Default.GetByteCount(jsonData);
 
         byte[] data = Encoding.UTF8.GetBytes(jsonData);
 
-        byte[] Buffer = new byte[4 + data.Length];
+        byte[] Buffer = new byte[8 + data.Length];
 
         PACKET_HEADER temp;
         temp.nID = 6;
@@ -102,9 +103,8 @@ public class TransportTCP : MonoBehaviour
 
         Array.Copy(Header, 0, Buffer, 0, Header.Length);
         Array.Copy(data, 0, Buffer, Header.Length, data.Length);
-        
 
-        m_socket.Send(Buffer, i, 0);
+        m_socket.Send(Buffer, temp.nSize, 0);
     }
 
     private byte[] StructToByte(object _obj)

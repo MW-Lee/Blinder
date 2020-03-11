@@ -24,8 +24,9 @@ public static class Constant
 
 public struct PACKET_HEADER
 {
-    public short nID;
-    public short nSize;
+    // c++ 에서 short = 2byte c# 에서는 4byte 이므로 int 형으로 변경
+    public int nID;
+    public int nSize;
 }
 
 public struct PKT_NOTICE_CHAT
