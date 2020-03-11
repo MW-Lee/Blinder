@@ -8,6 +8,160 @@ using UnityEngine;
 using System.IO;
 using System.Text;
 
+public class PlayerController : MonoBehaviour
+{
+    #region 변수
+
+    //
+    // 기본 이동 관련 변수
+    //
+    /// <summary>
+    /// (보낼 데이터) 움직이기 위한 방향벡터
+    /// </summary>
+    public Vector3 vDir;
+    /// <summary>
+    /// 움직이는 속도
+    /// </summary>
+    public float fMoveSpeed;
+    /// <summary>
+    /// 회전 속도
+    /// </summary>
+    public float fRotSpeed;
+
+    /// <summary>
+    /// Transform을 미리 파싱해놓음 (최적화)
+    /// </summary>
+    private Transform TF;
+    /// <summary>
+    /// (보낼 데이터) 캐릭터의 현재 상태
+    /// </summary>
+    private State sState;
+    /// <summary>
+    /// (보낼 데이터) 캐릭터의 X축 이동량
+    /// </summary>
+    private float fHorizontal;
+    /// <summary>
+    /// (보낼 데이터) 캐릭터의 Y축 이동량 
+    /// </summary>
+    private float fVertical;
+    /// <summary>
+    /// (보낼 데이터) 캐릭터의 Y축 기준 회전량
+    /// </summary>
+    private float fRotate;
+
+    //
+    // 시간 관련 변수
+    //
+    /// <summary>
+    /// 0.2초로 고정
+    /// </summary>
+    private float fOldTime;
+    /// <summary>
+    /// DeltaTime을 더하여 0.2초 마다 자르기 위해 시간을 담을 변수
+    /// </summary>
+    private float fCurTime;
+
+    //
+    // 서버 관련 변수
+    //
+    /// <summary>
+    /// 상대쪽으로 데이터를 보내기 위한 JsonManager
+    /// </summary>
+    private JsonMgr jsonMgr;
+    /// <summary>
+    /// 상대쪽에 Json파일을 만들 위치
+    /// </summary>
+    private string sDataPath;
+
+    #endregion
+
+    /////////////////////////////////////////////////////////////////////////////////
+
+    #region 함수
+
+    /// <summary>
+    /// 상대쪽으로 데이터를 보내는 함수
+    /// </summary>
+    private void JsonOverWirte()
+    {
+        // 보낼 내용을 정리
+        JsonClass json = new JsonClass(this.gameObject.transform, sState, vDir);
+
+        // 정리된 내용을 Json으로 변경
+        string jsonData = jsonMgr.ObjectToJson(json);
+
+        // (Test) Json파일 생성
+        jsonMgr.CreateJsonFile(sDataPath, "DisPlayer", jsonData);
+
+        // 변경된 Json을 치환
+        //byte[] data = Encoding.UTF8.GetBytes(jsonData);
+
+        // 쏘세요!
+        //TransportTCP.instance.Send(data, data.Length);
+    }
+
+    #endregion
+
+    /////////////////////////////////////////////////////////////////////////////////
+
+    #region 실행
+
+    private void Start()
+    {
+        // 초기 세팅
+        TF = GetComponent<Transform>();
+        vDir = Vector3.zero;
+        fHorizontal = .0f;
+        fVertical = .0f;
+        fRotate = .0f;
+        fMoveSpeed = 1.0f;
+        fRotSpeed = 30.0f;
+
+        sDataPath = Application.dataPath + "/Resources/Json";
+
+        fOldTime = .2f;
+        fCurTime = .0f;
+
+        jsonMgr = new JsonMgr();
+        sState = State.Idle;
+    }
+
+    private void Update()
+    {
+        // 0.2초마다 갱신하기
+        fCurTime += Time.deltaTime;
+
+        // 유니티 제공 InputAxis 활용 > 이동량, 회전량 받기
+        fHorizontal = Input.GetAxis("Horizontal");
+        fVertical = Input.GetAxis("Vertical");
+        fRotate = Input.GetAxis("Mouse X");
+
+        // 방향벡터 계산
+        Vector3 moveDir = (Vector3.forward * fVertical) + (Vector3.right * fHorizontal);
+
+        // 방향으로 이동
+        transform.Translate(moveDir.normalized * fMoveSpeed * Time.deltaTime, Space.Self);
+
+        // 회전
+        transform.Rotate(Vector3.up * fRotate * fRotSpeed * Time.deltaTime);
+
+        // 캐릭터가 X || Z 축으로 조금이라도 움직일경우 Idle 상태에서 Walk로 변경
+        sState = fHorizontal != 0 || fVertical != 0 ? State.Walk : State.Idle;
+
+        // 보낼 방향벡터 계산
+        vDir = new Vector3(fHorizontal, 0, fVertical);
+
+        if (fCurTime >= fOldTime)
+        {
+            fCurTime -= fOldTime;
+            JsonOverWirte();
+        }
+    }
+
+    #endregion
+}
+
+// CHY ver.
 //public class PlayerController : MonoBehaviour
 //{
 //    // 이동, 회전 관련 변수.
@@ -72,102 +226,3 @@ using System.Text;
 
 
 //}
-
-public class PlayerController : MonoBehaviour
-{
-    #region 변수
-
-    //
-    // 기본 이동 관련 변수
-    //
-    public Vector3 vDir;
-    public float fMoveSpeed;
-    public float fRotSpeed;
-
-    private Transform TF;
-    private State sState;
-    private float fHorizontal;
-    private float fVertical;
-    private float fRotate;
-
-    //
-    // 시간 관련 변수
-    //
-    private float fOldTime;
-    private float fCurTime;
-
-    //
-    // 서버 관련 변수
-    //
-    private JsonMgr jsonMgr;
-    private string sDataPath;
-
-    #endregion
-
-    /////////////////////////////////////////////////////////////////////////////////
-
-    #region 함수
-
-    private void JsonOverWirte()
-    {
-        JsonClass json = new JsonClass(this.gameObject.transform, sState, vDir, fRotate);
-        string jsonData = jsonMgr.ObjectToJson(json);
-        jsonMgr.CreateJsonFile(sDataPath, "DisPlayer", jsonData);
-
-        //byte[] data = Encoding.UTF8.GetBytes(jsonData);
-
-        //TransportTCP.instance.Send(data, data.Length);
-    }
-
-    #endregion
-
-    /////////////////////////////////////////////////////////////////////////////////
-
-    #region 실행
-
-    private void Start()
-    {
-        TF = GetComponent<Transform>();
-        vDir = Vector3.zero;
-        fHorizontal = .0f;
-        fVertical = .0f;
-        fRotate = .0f;
-        fMoveSpeed = 1.0f;
-        fRotSpeed = 30.0f;
-
-        sDataPath = Application.dataPath + "/Resources/Json";
-
-        fOldTime = .2f;
-        fCurTime = .0f;
-
-        jsonMgr = new JsonMgr();
-        sState = State.Idle;
-    }
-
-    private void Update()
-    {
-        fCurTime += Time.deltaTime;
-
-        fHorizontal = Input.GetAxis("Horizontal");
-        fVertical = Input.GetAxis("Vertical");
-        fRotate = Input.GetAxis("Mouse X");
-
-        Vector3 moveDir = (Vector3.forward * fVertical) + (Vector3.right * fHorizontal);
-
-        transform.Translate(moveDir.normalized * fMoveSpeed * Time.deltaTime, Space.Self);
-
-        transform.Rotate(Vector3.up * fRotate * fRotSpeed * Time.deltaTime);
-
-        sState = fHorizontal != 0 || fVertical != 0 ? State.Walk : State.Idle;
-
-        vDir = new Vector3(fHorizontal, 0, fVertical);
-
-        if (fCurTime >= fOldTime)
-        {
-            fCurTime -= fOldTime;
-            JsonOverWirte();
-        }
-    }
-
-    #endregion
-}

@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System;
 using System.Text;
+using System.Runtime.InteropServices;
 
 public class TransportTCP : MonoBehaviour
 {
@@ -84,12 +85,38 @@ public class TransportTCP : MonoBehaviour
     // json 보내기 테스트 성공
     private void handle_send()
     {
-        JsonClass json = new JsonClass(this.gameObject.transform, State.Idle, Vector3.zero, .0f);
+        JsonClass json = new JsonClass(this.gameObject.transform, State.Idle, Vector3.zero);
         string jsonData = jsonmgr.ObjectToJson(json);
 
         int i = Encoding.Default.GetByteCount(jsonData);
+
         byte[] data = Encoding.UTF8.GetBytes(jsonData);
-        m_socket.Send(data, i, 0);
+
+        byte[] Buffer = new byte[4 + data.Length];
+
+        PACKET_HEADER temp;
+        temp.nID = 6;
+        temp.nSize = (short)Buffer.Length;
+
+        byte[] Header = StructToByte(temp);
+
+        Array.Copy(Header, 0, Buffer, 0, Header.Length);
+        Array.Copy(data, 0, Buffer, Header.Length, data.Length);
+        
+
+        m_socket.Send(Buffer, i, 0);
+    }
+
+    private byte[] StructToByte(object _obj)
+    {
+        int size = Marshal.SizeOf(_obj);
+        byte[] arr = new byte[size];
+        IntPtr ptr = Marshal.AllocHGlobal(size);
+
+        Marshal.StructureToPtr(_obj, ptr, true);
+        Marshal.Copy(ptr, arr, 0, size);
+        Marshal.FreeHGlobal(ptr);
+        return arr;
     }
 
     // json 받기 테스트
@@ -101,7 +128,7 @@ public class TransportTCP : MonoBehaviour
 
             int bytesRec = m_socket.Receive(bytes);
 
-            Debug.Log(bytesRec);
+            //Debug.Log(bytesRec);
 
             if(bytesRec <= 0 || bytesRec > bytes.Length)
             {
@@ -109,7 +136,15 @@ public class TransportTCP : MonoBehaviour
             }
             else
             {
-                string msg = Encoding.Default.GetString(bytes);
+                PACKET_HEADER temp = new PACKET_HEADER();
+                byte[] tempByte = new byte[512];
+
+                Array.Copy(bytes, 0, tempByte, 0, 4);
+                temp = ByteToStruct<PACKET_HEADER>(tempByte);
+                Array.Clear(tempByte, 0, tempByte.Length);
+
+                Array.Copy(bytes, 20, tempByte, 0, (bytes.Length - 20));
+                string msg = Encoding.Default.GetString(tempByte);
                 string[] DummyMsg = msg.Split('\0');
 
                 jsonmgr.CreateJsonFile(datapath, "Displayer", DummyMsg[0]);
@@ -118,6 +153,33 @@ public class TransportTCP : MonoBehaviour
         catch(System.Exception e)
         {
             Debug.Log(e.ToString());
+        }
+    }
+
+    private T ByteToStruct<T>(byte[] _inputHeader) where T : struct
+    {
+        int size = 4;
+        IntPtr ptr = Marshal.AllocHGlobal(size);
+
+        Marshal.Copy(_inputHeader, 0, ptr, size);
+        T oResult = (T)Marshal.PtrToStructure(ptr, typeof(T));
+        Marshal.FreeHGlobal(ptr);
+
+        return oResult;
+    }
+
+    private void ProcessPacket(int nSessionID, string[] pData)
+    {
+
+        switch(nSessionID)
+        {
+            case Constant.RES_IN:
+
+                break;
+
+            case Constant.NOTICE_CHAT:
+
+                break;
         }
     }
 }

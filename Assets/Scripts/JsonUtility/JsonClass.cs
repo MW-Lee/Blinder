@@ -17,12 +17,11 @@ public class JsonClass
     public Quaternion vRot;
     public Vector3 vScale;
     public State state;
-    public float fRot;
     public Vector3 vDir;
 
     public JsonClass() { }
 
-    public JsonClass(Transform transform, State _state, Vector3 _vDir, float _fRot)
+    public JsonClass(Transform transform, State _state, Vector3 _vDir)
     {
         vPos = transform.position;
         vRot = transform.rotation;
@@ -31,7 +30,5 @@ public class JsonClass
         state = _state;
 
         vDir = _vDir;
-
-        fRot = _fRot;
     }
 }

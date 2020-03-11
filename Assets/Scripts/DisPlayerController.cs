@@ -11,37 +11,65 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DisPlayerController : CharacterClass
+public class DisPlayerController : MonoBehaviour
 {
     #region 변수
 
     //
     // 기본 이동 관련 변수
     //
+    /// <summary>
+    /// (받은 데이터) 움직이기 위한 방향벡터
+    /// </summary>
     public Vector3 vDir;
+    /// <summary>
+    /// 움직이는 속도
+    /// </summary>
     public float fMoveSpeed;
+    /// <summary>
+    /// 회전 속도
+    /// </summary>
     public float fRotSpeed;
 
+    /// <summary>
+    /// Transform을 미리 파싱해놓음 (최적화)
+    /// </summary>
     private Transform TF;
+    /// <summary>
+    /// (받은 데이터) 캐릭터의 현재 상태
+    /// </summary>
     private State sState;
-    private float fHorizontal;
-    private float fVertical;
-    private float fRotate;
-
+    /// <summary>
+    /// (임시 데이터) 0.2초마다 움직일 목적지
+    /// </summary>
     private Vector3 vDestination;
+    /// <summary>
+    /// (받은 데이터) 회전하기 위한 Quaternion
+    /// </summary>
     private Quaternion vRot;
-    private float fRot;
 
     //
     // 시간 관련 변수
     //
+    /// <summary>
+    /// 0.2초 고정
+    /// </summary>
     private float fOldTime;
+    /// <summary>
+    /// DeltaTime을 더하여 0.2초마다 자르기 위해 시간을 담을 변수
+    /// </summary>
     private float fCurTime;
 
     //
     // 서버 관련 변수
     //
+    /// <summary>
+    /// 상대쪽에서 받은 데이터를 저장하는 JsonClass
+    /// </summary>
     private JsonClass jcReceiveData;
+    /// <summary>
+    /// 로드할 파일 위치
+    /// </summary>
     private string sDataPath;
 
     #endregion
@@ -50,33 +78,20 @@ public class DisPlayerController : CharacterClass
 
     #region 함수
 
-    //private void JsonOverWirte()
-    //{
-    //    JsonClass json = new JsonClass(this.gameObject.transform, state, vDir);
-    //    string jsonData = jsonMgr.ObjectToJson(json);
-    //    //jsonMgr.CreateJsonFile(dataPath, "DisPlayer", jsonData);
-
-    //    byte[] data = Encoding.UTF8.GetBytes(jsonData);
-
-    //    TransportTCP.instance.Send(data, data.Length);
-    //}
-
+    /// <summary>
+    /// 상대 쪽에서 보낸 데이터를 받아서 적용시키기 위한 함수
+    /// </summary>
     private void JsonRead()
     {
+        // 만들어진 Json파일을 JsonClass형식으로 로드
         jcReceiveData = new JsonMgr().LoadJsonFile<JsonClass>(sDataPath, "DisPlayer");
 
-        if (TF.position != vDestination)
-            TF.position = vDestination;
-
-        //if (TF.rotation != vRot)
-        //    TF.rotation = vRot;
-
+        // 받은 데이터로 캐릭터를 움직이기
         vDestination = jcReceiveData.vPos;
         vRot = jcReceiveData.vRot;
         TF.localScale = jcReceiveData.vScale;
         sState = jcReceiveData.state;
         vDir = jcReceiveData.vDir;
-        fRot = jcReceiveData.fRot;
     }
 
     #endregion
@@ -87,11 +102,9 @@ public class DisPlayerController : CharacterClass
 
     private void Start()
     {
+        // 초기 세팅
         TF = GetComponent<Transform>();
         vDir = Vector3.zero;
-        fHorizontal = .0f;
-        fVertical = .0f;
-        fRotate = .0f;
         fMoveSpeed = 1.0f;
         fRotSpeed = 30.0f;
 
@@ -106,6 +119,7 @@ public class DisPlayerController : CharacterClass
 
     private void Update()
     {
+        // 0.2초 마다 갱신하기
         fCurTime += Time.deltaTime;
         if (fCurTime >= fOldTime)
         {
@@ -113,33 +127,22 @@ public class DisPlayerController : CharacterClass
             JsonRead();
         }
 
+        // 현재 상태가 가만히 있지 않을 때만 작동
         if (sState != State.Idle)
         {
             TF.Translate(vDir.normalized * fMoveSpeed * Time.deltaTime);
 
-            //TF.Rotate(TF.localRotation * Vector3.up * fRotSpeed * Time.deltaTime);
-            //TF.Rotate(Vector3.up * fRot * fRotSpeed * Time.deltaTime);
-
             TF.rotation = Quaternion.Slerp(TF.rotation, vRot, .2f);
         }
-
-
-
-
-
-        //fHorizontal = Input.GetAxis("Horizontal");
-        //fVertical = Input.GetAxis("Vertical");
-        //fRotate = Input.GetAxis("Mouse X");
-
-        //Vector3 moveDir = (Vector3.forward * fVertical) + (Vector3.right * fHorizontal);
-
-        //transform.Translate(moveDir.normalized * fMoveSpeed * Time.deltaTime);
-
-        //transform.Rotate(Vector3.up * fRotate * fRotSpeed * Time.deltaTime);
-
-        //sState = fHorizontal != 0 || fVertical != 0 ? State.Walk : State.Idle;
-
-        //vDir = new Vector3(fHorizontal, 0, fVertical);
+        // 현재 상태가 가만히 있는데 위치가 받은 위치와 다른 경우 보간이동
+        else if(TF.position != vDestination && sState == State.Idle)
+        {
+            TF.Translate(vDir.normalized * fMoveSpeed * Time.deltaTime);
+            TF.position = new Vector3(
+                Mathf.Lerp(TF.position.x, vDestination.x, 0.2f),
+                Mathf.Lerp(TF.position.y, vDestination.y, 0.2f),
+                Mathf.Lerp(TF.position.z, vDestination.z, 0.2f));
+        }
     }
 
     #endregion
