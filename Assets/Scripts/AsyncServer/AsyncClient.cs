@@ -12,7 +12,7 @@ public class StateObject
 {
     public Socket workSocket = null;
 
-    public const int BufferSize = 512;
+    public const int BufferSize = 1024;
 
     public byte[] buffer = new byte[BufferSize];
 
@@ -23,7 +23,7 @@ public class AsyncClient : MonoBehaviour
 {
     public Socket socket;
 
-    string ipAdress = "127.0.0.1";
+    string ipAdress = "192.168.43.35";
 
     private int port = 31400;
 
@@ -36,6 +36,7 @@ public class AsyncClient : MonoBehaviour
     string response;
 
     private JsonMgr jsonmgr = new JsonMgr();
+    string datapath;
 
     byte[] sendBuffer = new byte[512];
 
@@ -48,6 +49,8 @@ public class AsyncClient : MonoBehaviour
         ipep = new IPEndPoint(ipAddr, port);
 
         Connect(ipep, socket);
+
+        datapath = Application.dataPath + "/Resources";
     }
 
     private void Update()
@@ -96,9 +99,7 @@ public class AsyncClient : MonoBehaviour
 
         byte[] Buffer = new byte[8 + data.Length];
 
-        PACKET_HEADER temp;
-        temp.nID = 6;
-        temp.nSize = (short)Buffer.Length;
+        PACKET_HEADER temp = new PACKET_HEADER(6, Buffer.Length);
 
         byte[] Header = StructToByte(temp);
 
@@ -131,12 +132,13 @@ public class AsyncClient : MonoBehaviour
     {
         try
         {
-            StateObject state = new StateObject();
-
-            state.workSocket = client;
+            StateObject state = new StateObject
+            {
+                workSocket = client
+            };
 
             client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                new AsyncCallback(ReceiveCallback), state);
+             new AsyncCallback(ReceiveCallback), state);
         }
         catch (Exception e)
         {
@@ -154,9 +156,31 @@ public class AsyncClient : MonoBehaviour
 
             int bytesRead = client.EndReceive(ar);
 
-            if(bytesRead >0)
+            if(bytesRead > 0)
             {
-                state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
+                state.sb.Append(Encoding.UTF8.GetString(state.buffer, 0, bytesRead));
+
+                PACKET_HEADER tempPH = new PACKET_HEADER();
+                PKT_NOTICE_CHAT tempPNC = new PKT_NOTICE_CHAT();
+                byte[] tempByte = new byte[1024];
+
+                Array.Copy(state.buffer, 0, tempByte, 0, Marshal.SizeOf<PACKET_HEADER>());
+                tempPH = ByteToStruct<PACKET_HEADER>(tempByte, Marshal.SizeOf<PACKET_HEADER>());
+                Array.Clear(tempByte, 0, tempByte.Length);
+
+                if (tempPH.nID == 7)
+                { 
+                    Array.Copy(state.buffer, Marshal.SizeOf<PACKET_HEADER>(), tempByte, 0, Marshal.SizeOf<PKT_NOTICE_CHAT>());
+                    tempPNC = ByteToStruct<PKT_NOTICE_CHAT>(tempByte, Marshal.SizeOf<PKT_NOTICE_CHAT>());
+                    Array.Clear(tempByte, 0, tempByte.Length);
+                }
+
+                //Array.Copy(state.buffer, Marshal.SizeOf<PKT_NOTICE_CHAT>(), tempByte, 0, (state.buffer.Length - Marshal.SizeOf<PKT_NOTICE_CHAT>()));
+                ////string msg = Encoding.Default.GetString(state.buffer);
+                //string msg = Encoding.Default.GetString(state.buffer);
+                //string[] DummyMsg = msg.Split('\0');
+
+                jsonmgr.CreateJsonFile(datapath, "Displayer", new string(tempPNC.szMessage));
 
                 client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     new AsyncCallback(ReceiveCallback), state);
@@ -189,13 +213,21 @@ public class AsyncClient : MonoBehaviour
         return arr;
     }
 
-    private T ByteToStruct<T>(byte[] _inputHeader) where T : struct
+    private T ByteToStruct<T>(byte[] _inputHeader, int size) where T : new()
     {
-        int size = 4;
         IntPtr ptr = Marshal.AllocHGlobal(size);
+        T oResult = new T();
 
         Marshal.Copy(_inputHeader, 0, ptr, size);
-        T oResult = (T)Marshal.PtrToStructure(ptr, typeof(T));
+        try
+        {
+            oResult = (T)Marshal.PtrToStructure(ptr, typeof(T));
+        }
+        catch(Exception e)
+        {
+            Debug.Log(e.ToString());
+        }
+        
         Marshal.FreeHGlobal(ptr);
 
         return oResult;
