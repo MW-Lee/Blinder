@@ -22,8 +22,7 @@ public class StateObject
 public class AsyncClient : MonoBehaviour
 {
     public Socket socket;
-
-    string ipAdress = "192.168.43.35";
+    private string ipAdress = "192.168.43.35";
 
     private int port = 31400;
 
@@ -99,9 +98,9 @@ public class AsyncClient : MonoBehaviour
 
         byte[] Buffer = new byte[8 + data.Length];
 
-        PACKET_HEADER temp = new PACKET_HEADER(6, Buffer.Length);
-
-        byte[] Header = StructToByte(temp);
+        //PACKET_HEADER temp = new PACKET_HEADER(6, Buffer.Length);
+        //byte[] Header = StructToByte(temp);
+        byte[] Header = StructToByte(new PACKET_HEADER(6, Buffer.Length));        
 
         Array.Copy(Header, 0, Buffer, 0, Header.Length);
         Array.Copy(data, 0, Buffer, Header.Length, data.Length);;
@@ -160,27 +159,8 @@ public class AsyncClient : MonoBehaviour
             {
                 state.sb.Append(Encoding.UTF8.GetString(state.buffer, 0, bytesRead));
 
-                PACKET_HEADER tempPH = new PACKET_HEADER();
-                PKT_NOTICE_CHAT tempPNC = new PKT_NOTICE_CHAT();
-                byte[] tempByte = new byte[1024];
-
-                Array.Copy(state.buffer, 0, tempByte, 0, Marshal.SizeOf<PACKET_HEADER>());
-                tempPH = ByteToStruct<PACKET_HEADER>(tempByte, Marshal.SizeOf<PACKET_HEADER>());
-                Array.Clear(tempByte, 0, tempByte.Length);
-
-                if (tempPH.nID == 7)
-                { 
-                    Array.Copy(state.buffer, Marshal.SizeOf<PACKET_HEADER>(), tempByte, 0, Marshal.SizeOf<PKT_NOTICE_CHAT>());
-                    tempPNC = ByteToStruct<PKT_NOTICE_CHAT>(tempByte, Marshal.SizeOf<PKT_NOTICE_CHAT>());
-                    Array.Clear(tempByte, 0, tempByte.Length);
-                }
-
-                //Array.Copy(state.buffer, Marshal.SizeOf<PKT_NOTICE_CHAT>(), tempByte, 0, (state.buffer.Length - Marshal.SizeOf<PKT_NOTICE_CHAT>()));
-                ////string msg = Encoding.Default.GetString(state.buffer);
-                //string msg = Encoding.Default.GetString(state.buffer);
-                //string[] DummyMsg = msg.Split('\0');
-
-                jsonmgr.CreateJsonFile(datapath, "Displayer", new string(tempPNC.szMessage));
+                // 받은 Packet을 분류하기 위한 함수로 이동
+                ProcessPacket(state.buffer);
 
                 client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     new AsyncCallback(ReceiveCallback), state);
@@ -198,6 +178,41 @@ public class AsyncClient : MonoBehaviour
         catch (Exception e)
         {
             Console.WriteLine(e.ToString());
+        }
+    }
+
+    /// <summary>
+    /// 받은 Packet을 분류하는 함수
+    /// </summary>
+    /// <param name="_inputData">받은 Data</param>
+    private void ProcessPacket(byte[] _inputData)
+    {
+        PACKET_HEADER tempPH = new PACKET_HEADER();
+        byte[] tempByte = new byte[1024];
+
+        Array.Copy(_inputData, 0, tempByte, 0, Marshal.SizeOf<PACKET_HEADER>());
+        tempPH = ByteToStruct<PACKET_HEADER>(tempByte, Marshal.SizeOf<PACKET_HEADER>());
+        Array.Clear(tempByte, 0, tempByte.Length);
+
+        switch (tempPH.nID)
+        {
+            case Constant.RES_IN:
+                //Array.Copy(state.buffer, Marshal.SizeOf<PKT_NOTICE_CHAT>(), tempByte, 0, (state.buffer.Length - Marshal.SizeOf<PKT_NOTICE_CHAT>()));
+                ////string msg = Encoding.Default.GetString(state.buffer);
+                //string msg = Encoding.Default.GetString(state.buffer);
+                //string[] DummyMsg = msg.Split('\0');
+                //jsonmgr.CreateJsonFile(datapath, "Displayer", new string(DummyMsg[0]));
+                return;
+
+            case Constant.NOTICE_CHAT:
+                PKT_NOTICE_CHAT tempPNC = new PKT_NOTICE_CHAT();
+
+                Array.Copy(_inputData, Marshal.SizeOf<PACKET_HEADER>(), tempByte, 0, Marshal.SizeOf<PKT_NOTICE_CHAT>());
+                tempPNC = ByteToStruct<PKT_NOTICE_CHAT>(tempByte, Marshal.SizeOf<PKT_NOTICE_CHAT>());
+                Array.Clear(tempByte, 0, tempByte.Length);
+
+                jsonmgr.CreateJsonFile(datapath, "Displayer", new string(tempPNC.szMessage));
+                return;
         }
     }
 
@@ -233,18 +248,4 @@ public class AsyncClient : MonoBehaviour
         return oResult;
     }
 
-    private void ProcessPacket(int nSessionID, string[] pData)
-    {
-
-        switch (nSessionID)
-        {
-            case Constant.RES_IN:
-
-                break;
-
-            case Constant.NOTICE_CHAT:
-
-                break;
-        }
-    }
 }

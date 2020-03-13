@@ -1,10 +1,11 @@
 ﻿////////////////////////////////////////////////
 //
-// 
+// BaseScript
 //
-// 상대쪽 캐릭터를 움직이기 위한 스크립트
+// 정보만 가진 클래스 및 구조체를 모아놓은 스크립트
+// 서버 / 클라 공용
 // 
-// 20. 03. 11
+// 20. 03. 12
 // MWLee
 ////////////////////////////////////////////////
 using System.Collections;
@@ -12,39 +13,71 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
+/// <summary>
+/// 전역 공통으로 사용할 변수 모음
+/// </summary>
 public static class Constant
 {
+    //
+    // Server Packet Header > nID 구분하는 변수
+    //
+    /// <summary>
+    /// Request IN
+    /// </summary>
     public const short REQ_IN = 1;
-
+    /// <summary>
+    /// Result IN
+    /// </summary>
     public const short RES_IN = 2;
-
+    /// <summary>
+    /// Request Chat
+    /// </summary>
     public const short REQ_CHAT = 6;
-
+    /// <summary>
+    /// Result(Notice) Chat
+    /// </summary>
     public const short NOTICE_CHAT = 7;
 
     //
+    // Server Packet 사용을 위한 변수
     //
-    //
+    /// <summary>
+    /// Chat > Max Name Length
+    /// </summary>
     public const int MAX_NAME_LEN = 17;
-
+    /// <summary>
+    /// Chat > Max Message Length
+    /// </summary>
     public const int MAX_MESSAGE_LEN = 512;
-
+    /// <summary>
+    /// Server > Max Receive Buffer Length
+    /// </summary>
     public const int MAX_RECEIVE_BUFFER_LEN = 512;
 }
 
+/// <summary>
+/// 서버에서 주고받을 Packet의 Header 구조체
+/// </summary>
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct PACKET_HEADER
 {
     // c++ 에서 short = 2byte c# 에서는 4byte 이므로 int 형으로 변경
+    /// <summary>
+    /// Packet Header ID
+    /// </summary>
+    [MarshalAs(UnmanagedType.SysInt)]
     public int nID;
+    /// <summary>
+    /// Packet Buffer Size
+    /// </summary>
+    [MarshalAs(UnmanagedType.SysInt)]
     public int nSize;
 
-    //public PACKET_HEADER()
-    //{
-    //    nID = 0;
-    //    nSize = 0;
-    //}
-
+    /// <summary>
+    /// 생성자
+    /// </summary>
+    /// <param name="id">Send시 보내는 Packet의 ID</param>
+    /// <param name="size">Send시 보내는 Packet의 크기</param>
     public PACKET_HEADER(int id, int size)
     {
         nID = id;
@@ -52,23 +85,20 @@ public struct PACKET_HEADER
     }
 }
 
+/// <summary>
+/// 받은 Packet이 Chat일 때 사용하기 위한 구조체
+/// </summary>
 [StructLayout(LayoutKind.Sequential)]
 public struct PKT_NOTICE_CHAT
 {
+    /// <summary>
+    /// 채팅을 보낸 플레이어의 닉네임
+    /// </summary>
     [MarshalAs(UnmanagedType.ByValArray,SizeConst = Constant.MAX_NAME_LEN)]
     public char[] szName;
+    /// <summary>
+    /// 보낸 채팅의 내용
+    /// </summary>
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constant.MAX_MESSAGE_LEN)]
     public char[] szMessage;
-
-    //string szName;
-    //string szMessage;
-
-    //public PKT_NOTICE_CHAT()
-    //{
-    //    //szName = new char[Constant.MAX_NAME_LEN];
-    //    //szMessage = new char[Constant.MAX_MESSAGE_LEN];
-
-    //    //szName = string.Empty;
-    //    //szMessage = string.Empty;
-    //}
 }
