@@ -58,6 +58,9 @@ public class AsyncClient : MonoBehaviour
 
     private void Update()
     {
+        if (PlayerController.bIsOnline && DisPlayerController.bIsOnline)
+            return;
+
         if (Input.GetKeyUp(KeyCode.A))
         {
             Send(socket, sendBuffer);

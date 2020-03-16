@@ -86,14 +86,17 @@ public class DisPlayerController : MonoBehaviour
     private void JsonRead()
     {
         // 만들어진 Json파일을 JsonClass형식으로 로드
-        jcReceiveData = new JsonMgr().LoadJsonFile<JsonClass>(sDataPath, "DisPlayer");
+        //jcReceiveData = new JsonMgr().LoadJsonFile<JsonClass>(sDataPath, "DisPlayer");
+
+        string temp = new JsonMgr().LoadJsonFile<string>(sDataPath, "DisPlayer");
+        JsonClass _json = new JsonMgr().JsonToObject<JsonClass>(temp);
 
         // 받은 데이터로 캐릭터를 움직이기
-        vDestination = jcReceiveData.vPos;
-        vRot = jcReceiveData.vRot;
-        TF.localScale = jcReceiveData.vScale;
-        sState = jcReceiveData.state;
-        vDir = jcReceiveData.vDir;
+        vDestination = _json.vPos;
+        vRot = _json.vRot;
+        TF.localScale = _json.vScale;
+        sState = _json.state;
+        vDir = _json.vDir;
     }
 
     #endregion
