@@ -102,7 +102,7 @@ public class AsyncClient : MonoBehaviour
         //int i = Encoding.Default.GetByteCount(jsonData);
 
         //byte[] data = Encoding.UTF8.GetBytes(jsonData);
-        string temp = "aaaaa";
+        string temp = "User";
         byte[] data = Encoding.UTF8.GetBytes(temp);
 
         byte[] Buffer = new byte[8 + data.Length];
@@ -137,7 +137,8 @@ public class AsyncClient : MonoBehaviour
 
             int bytesSend = client.EndSend(ar);
 
-            Console.WriteLine("Send {0} bytes to server.", bytesSend);
+            //Console.WriteLine("Send {0} bytes to server.", bytesSend);
+            Debug.Log("Send " + bytesSend + " bytes to server.");
 
             sendDone.Set();
         }

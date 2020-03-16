@@ -87,7 +87,9 @@ public class PlayerController : MonoBehaviour
     private void JsonOverWirte()
     {
         // 보낼 내용을 정리
-        JsonClass json = new JsonClass(this.gameObject.transform, sState, vDir);
+        //JsonClass json = new JsonClass(this.gameObject.transform, sState, vDir);
+
+        object json = new JsonClass(this.gameObject.transform, sState, vDir);
 
         // 정리된 내용을 Json으로 변경
         string jsonData = jsonMgr.ObjectToJson(json);
