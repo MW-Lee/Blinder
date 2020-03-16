@@ -158,11 +158,10 @@ public class PlayerController : MonoBehaviour
             // 보낼 방향벡터 계산
             vDir = new Vector3(fHorizontal, 0, fVertical);
 
-            if (fCurTime >= fOldTime)
-            {
-                fCurTime -= fOldTime;
-                JsonOverWirte();
-            }
+        if (fCurTime >= fOldTime)
+        {
+            fCurTime -= fOldTime;
+            JsonOverWirte();
         }
     }
     #endregion
