@@ -98,13 +98,13 @@ public class AsyncClient : MonoBehaviour
         // 해더를 추가한 만큼 데이터를 보내야 하기때문에 아래쪽에서 연산한 temp.nSize 만큼 크기를 보내주기로 변경.
         //int i = Encoding.Default.GetByteCount(jsonData);
 
-        byte[] data = Encoding.UTF8.GetBytes(jsonData);
+        //byte[] data = Encoding.UTF8.GetBytes(jsonData);
+        string temp = "aaaaa";
+        byte[] data = Encoding.UTF8.GetBytes(temp);
 
         byte[] Buffer = new byte[8 + data.Length];
 
-        //PACKET_HEADER temp = new PACKET_HEADER(6, Buffer.Length);
-        //byte[] Header = StructToByte(temp);
-        byte[] Header = StructToByte(new PACKET_HEADER(6, Buffer.Length));        
+        byte[] Header = StructToByte(new PACKET_HEADER(1, Buffer.Length));        
 
         Array.Copy(Header, 0, Buffer, 0, Header.Length);
         Array.Copy(data, 0, Buffer, Header.Length, data.Length);
@@ -219,6 +219,8 @@ public class AsyncClient : MonoBehaviour
                 //string msg = Encoding.Default.GetString(state.buffer);
                 //string[] DummyMsg = msg.Split('\0');
                 //jsonmgr.CreateJsonFile(datapath, "Displayer", new string(DummyMsg[0]));
+                PlayerController.bIsOnline = true;
+                DisPlayerController.bIsOnline = true;
                 return;
 
             case Constant.NOTICE_CHAT:
