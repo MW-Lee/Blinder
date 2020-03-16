@@ -72,6 +72,8 @@ public class DisPlayerController : MonoBehaviour
     /// </summary>
     private string sDataPath;
 
+    public static bool bIsOnline;
+
     #endregion
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -115,33 +117,38 @@ public class DisPlayerController : MonoBehaviour
 
         jcReceiveData = new JsonClass();
         sState = State.Idle;
+
+        bIsOnline = false;
     }
 
     private void Update()
     {
-        // 0.2초 마다 갱신하기
-        fCurTime += Time.deltaTime;
-        if (fCurTime >= fOldTime)
+        if (bIsOnline)
         {
-            fCurTime -= fOldTime;
-            JsonRead();
-        }
+            // 0.2초 마다 갱신하기
+            fCurTime += Time.deltaTime;
+            if (fCurTime >= fOldTime)
+            {
+                fCurTime -= fOldTime;
+                JsonRead();
+            }
 
-        // 현재 상태가 가만히 있지 않을 때만 작동
-        if (sState != State.Idle)
-        {
-            TF.Translate(vDir.normalized * fMoveSpeed * Time.deltaTime);
+            // 현재 상태가 가만히 있지 않을 때만 작동
+            if (sState != State.Idle)
+            {
+                TF.Translate(vDir.normalized * fMoveSpeed * Time.deltaTime);
 
-            TF.rotation = Quaternion.Slerp(TF.rotation, vRot, .2f);
-        }
-        // 현재 상태가 가만히 있는데 위치가 받은 위치와 다른 경우 보간이동
-        else if(TF.position != vDestination && sState == State.Idle)
-        {
-            TF.Translate(vDir.normalized * fMoveSpeed * Time.deltaTime);
-            TF.position = new Vector3(
-                Mathf.Lerp(TF.position.x, vDestination.x, 0.2f),
-                Mathf.Lerp(TF.position.y, vDestination.y, 0.2f),
-                Mathf.Lerp(TF.position.z, vDestination.z, 0.2f));
+                TF.rotation = Quaternion.Slerp(TF.rotation, vRot, .2f);
+            }
+            // 현재 상태가 가만히 있는데 위치가 받은 위치와 다른 경우 보간이동
+            else if (TF.position != vDestination && sState == State.Idle)
+            {
+                TF.Translate(vDir.normalized * fMoveSpeed * Time.deltaTime);
+                TF.position = new Vector3(
+                    Mathf.Lerp(TF.position.x, vDestination.x, 0.2f),
+                    Mathf.Lerp(TF.position.y, vDestination.y, 0.2f),
+                    Mathf.Lerp(TF.position.z, vDestination.z, 0.2f));
+            }
         }
     }
 

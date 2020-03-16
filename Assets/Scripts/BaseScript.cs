@@ -109,6 +109,7 @@ public struct PACKET_HEADER
     }
 }
 
+
 /// <summary>
 /// 받은 Packet이 Chat일 때 사용하기 위한 구조체
 /// </summary>

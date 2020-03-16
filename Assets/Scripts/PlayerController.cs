@@ -73,6 +73,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private string sDataPath;
 
+    public static bool bIsOnline;
+
     #endregion
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -125,40 +127,44 @@ public class PlayerController : MonoBehaviour
 
         jsonMgr = new JsonMgr();
         sState = State.Idle;
+
+        bIsOnline = false;
     }
 
     private void Update()
     {
-        // 0.2초마다 갱신하기
-        fCurTime += Time.deltaTime;
-
-        // 유니티 제공 InputAxis 활용 > 이동량, 회전량 받기
-        fHorizontal = Input.GetAxis("Horizontal");
-        fVertical = Input.GetAxis("Vertical");
-        fRotate = Input.GetAxis("Mouse X");
-
-        // 방향벡터 계산
-        Vector3 moveDir = (Vector3.forward * fVertical) + (Vector3.right * fHorizontal);
-
-        // 방향으로 이동
-        transform.Translate(moveDir.normalized * fMoveSpeed * Time.deltaTime, Space.Self);
-
-        // 회전
-        transform.Rotate(Vector3.up * fRotate * fRotSpeed * Time.deltaTime);
-
-        // 캐릭터가 X || Z 축으로 조금이라도 움직일경우 Idle 상태에서 Walk로 변경
-        sState = fHorizontal != 0 || fVertical != 0 ? State.Walk : State.Idle;
-
-        // 보낼 방향벡터 계산
-        vDir = new Vector3(fHorizontal, 0, fVertical);
-
-        if (fCurTime >= fOldTime)
+        if (bIsOnline)
         {
-            fCurTime -= fOldTime;
-            JsonOverWirte();
+            // 0.2초마다 갱신하기
+            fCurTime += Time.deltaTime;
+
+            // 유니티 제공 InputAxis 활용 > 이동량, 회전량 받기
+            fHorizontal = Input.GetAxis("Horizontal");
+            fVertical = Input.GetAxis("Vertical");
+            fRotate = Input.GetAxis("Mouse X");
+
+            // 방향벡터 계산
+            Vector3 moveDir = (Vector3.forward * fVertical) + (Vector3.right * fHorizontal);
+
+            // 방향으로 이동
+            transform.Translate(moveDir.normalized * fMoveSpeed * Time.deltaTime, Space.Self);
+
+            // 회전
+            transform.Rotate(Vector3.up * fRotate * fRotSpeed * Time.deltaTime);
+
+            // 캐릭터가 X || Z 축으로 조금이라도 움직일경우 Idle 상태에서 Walk로 변경
+            sState = fHorizontal != 0 || fVertical != 0 ? State.Walk : State.Idle;
+
+            // 보낼 방향벡터 계산
+            vDir = new Vector3(fHorizontal, 0, fVertical);
+
+            if (fCurTime >= fOldTime)
+            {
+                fCurTime -= fOldTime;
+                //JsonOverWirte();
+            }
         }
     }
-
     #endregion
 }
 
