@@ -161,7 +161,7 @@ public class PlayerController : MonoBehaviour
             if (fCurTime >= fOldTime)
             {
                 fCurTime -= fOldTime;
-                //JsonOverWirte();
+                JsonOverWirte();
             }
         }
     }
