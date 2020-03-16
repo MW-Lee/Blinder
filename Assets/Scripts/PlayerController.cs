@@ -91,13 +91,14 @@ public class PlayerController : MonoBehaviour
         string jsonData = jsonMgr.ObjectToJson(json);
 
         // (Test) Json파일 생성
-        jsonMgr.CreateJsonFile(sDataPath, "DisPlayer", jsonData);
+        //jsonMgr.CreateJsonFile(sDataPath, "DisPlayer", jsonData);
 
         // 변경된 Json을 치환
-        //byte[] data = Encoding.UTF8.GetBytes(jsonData);
+        byte[] data = Encoding.UTF8.GetBytes(jsonData);
 
         // 쏘세요!
         //TransportTCP.instance.Send(data, data.Length);
+        AsyncClient.instance.Send(data, 6);
     }
 
     #endregion

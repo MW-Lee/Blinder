@@ -55,6 +55,30 @@ public static class Constant
     public const int MAX_RECEIVE_BUFFER_LEN = 512;
 }
 
+public class ThreadingTimer
+{
+    public System.Threading.Timer myTimer;
+
+    /// <summary>
+    /// 스레드 타이머를 가동시키는 함수
+    /// </summary>
+    /// <param name="callback">일정 시간마다 호출할 함수</param>
+    /// <param name="starttime">언제부터 시작할지 정하는 변수, (기본으로 바로 시작함)</param>
+    /// <param name="sendtime">몇 초마다 호출될지 정하는 변수, (기본으로 0.2초)</param>
+    public void ThreadTimerStart(System.Threading.TimerCallback callback, int starttime = 0, int sendtime = 200)
+    {
+        myTimer = new System.Threading.Timer(callback, null, starttime, sendtime);
+    }
+
+    /// <summary>
+    /// 가동된 스레드 타이머를 정지시키는 함수
+    /// </summary>
+    public void ThreadTimerStop()
+    {
+        myTimer.Dispose();
+    }
+}
+
 /// <summary>
 /// 서버에서 주고받을 Packet의 Header 구조체
 /// </summary>

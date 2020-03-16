@@ -21,6 +21,8 @@ public class StateObject
 
 public class AsyncClient : MonoBehaviour
 {
+    public static AsyncClient instance;
+
     public Socket socket;
     private string ipAdress = "192.168.43.35";
 
@@ -41,6 +43,8 @@ public class AsyncClient : MonoBehaviour
 
     private void Start()
     {
+        instance = this;
+
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
         IPAddress ipAddr = IPAddress.Parse(ipAdress);
@@ -49,7 +53,7 @@ public class AsyncClient : MonoBehaviour
 
         Connect(ipep, socket);
 
-        datapath = Application.dataPath + "/Resources";
+        datapath = Application.dataPath + "/Resources/Json";
     }
 
     private void Update()
@@ -86,7 +90,7 @@ public class AsyncClient : MonoBehaviour
         }
     }
 
-    private void Send(Socket client, byte[] datas)
+    public void Send(Socket client, byte[] datas)
     {
         JsonClass json = new JsonClass(this.gameObject.transform, State.Idle, Vector3.zero);
         string jsonData = jsonmgr.ObjectToJson(json);
@@ -103,10 +107,23 @@ public class AsyncClient : MonoBehaviour
         byte[] Header = StructToByte(new PACKET_HEADER(6, Buffer.Length));        
 
         Array.Copy(Header, 0, Buffer, 0, Header.Length);
-        Array.Copy(data, 0, Buffer, Header.Length, data.Length);;
+        Array.Copy(data, 0, Buffer, Header.Length, data.Length);
 
         client.BeginSend(Buffer, 0, Buffer.Length, SocketFlags.None,
             new AsyncCallback(SendCallback), client);
+    }
+
+    public void Send(byte[] _inputData, int _inputID)
+    {
+        byte[] Buffer = new byte[8 + _inputData.Length];
+
+        byte[] Header = StructToByte(new PACKET_HEADER(_inputID, Buffer.Length));
+
+        Array.Copy(Header, 0, Buffer, 0, Header.Length);
+        Array.Copy(_inputData, 0, Buffer, Header.Length, _inputData.Length);
+
+        socket.BeginSend(Buffer, 0, Buffer.Length, SocketFlags.None,
+            new AsyncCallback(SendCallback), socket);
     }
 
     private void SendCallback(IAsyncResult ar)
