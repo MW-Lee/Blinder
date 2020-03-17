@@ -24,7 +24,8 @@ public class AsyncClient : MonoBehaviour
     public static AsyncClient instance;
 
     public Socket socket;
-    private string ipAdress = "192.168.43.35";
+    //private string ipAdress = "192.168.43.35";
+    private string ipAdress = "127.0.0.1";
 
     private int port = 31400;
 

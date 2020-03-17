@@ -74,6 +74,8 @@ public class DisPlayerController : MonoBehaviour
 
     public static bool bIsOnline;
 
+    JsonMgr jsonmgr = new JsonMgr();
+
     #endregion
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -88,8 +90,10 @@ public class DisPlayerController : MonoBehaviour
         // 만들어진 Json파일을 JsonClass형식으로 로드
         //jcReceiveData = new JsonMgr().LoadJsonFile<JsonClass>(sDataPath, "DisPlayer");
 
-        string temp = new JsonMgr().LoadJsonFile<string>(sDataPath, "DisPlayer");
-        JsonClass _json = new JsonMgr().JsonToObject<JsonClass>(temp);
+        //string temp = jsonmgr.LoadJsonFile<string>(sDataPath, "DisPlayer");
+        //JsonClass _json = jsonmgr.JsonToObject<JsonClass>(temp);
+
+        JsonClass _json = jsonmgr.LoadJsonFile<JsonClass>(sDataPath, "DisPlayer");
 
         // 받은 데이터로 캐릭터를 움직이기
         vDestination = _json.vPos;

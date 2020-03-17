@@ -95,7 +95,7 @@ public class PlayerController : MonoBehaviour
         string jsonData = jsonMgr.ObjectToJson(json);
 
         // (Test) Json파일 생성
-        //jsonMgr.CreateJsonFile(sDataPath, "DisPlayer", jsonData);
+        jsonMgr.CreateJsonFile(sDataPath, "DisPlayer", jsonData);
 
         // 변경된 Json을 치환
         byte[] data = Encoding.UTF8.GetBytes(jsonData);
@@ -122,7 +122,7 @@ public class PlayerController : MonoBehaviour
         fMoveSpeed = 1.0f;
         fRotSpeed = 30.0f;
 
-        sDataPath = Application.dataPath + "/Resources/Json";
+        sDataPath = Application.dataPath + "/Resources";
 
         fOldTime = .2f;
         fCurTime = .0f;
