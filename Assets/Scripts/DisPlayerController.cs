@@ -7,6 +7,7 @@
 // 20. 03. 06
 // MWLee
 ////////////////////////////////////////////////
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -76,6 +77,8 @@ public class DisPlayerController : MonoBehaviour
 
     JsonMgr jsonmgr = new JsonMgr();
 
+    
+
     #endregion
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -92,6 +95,9 @@ public class DisPlayerController : MonoBehaviour
 
         //string temp = jsonmgr.LoadJsonFile<string>(sDataPath, "DisPlayer");
         //JsonClass _json = jsonmgr.JsonToObject<JsonClass>(temp);
+
+        
+
 
         JsonClass _json = jsonmgr.LoadJsonFile<JsonClass>(sDataPath, "DisPlayer");
 

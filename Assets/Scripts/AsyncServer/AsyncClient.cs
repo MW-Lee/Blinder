@@ -1,12 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
 using System.Threading;
 using System.Text;
 using System.Runtime.InteropServices;
+
+using System.IO;
+
+using Newtonsoft.Json;
 
 public class StateObject
 {
@@ -24,8 +26,8 @@ public class AsyncClient : MonoBehaviour
     public static AsyncClient instance;
 
     public Socket socket;
-    //private string ipAdress = "192.168.43.35";
-    private string ipAdress = "127.0.0.1";
+    private string ipAdress = "192.168.43.35";
+    //private string ipAdress = "127.0.0.1";
 
     private int port = 31400;
 
@@ -106,14 +108,15 @@ public class AsyncClient : MonoBehaviour
         string temp = "User";
         byte[] data = Encoding.UTF8.GetBytes(temp);
 
-        byte[] Buffer = new byte[8 + data.Length];
+        byte[] buffer = new byte[8 + data.Length];
 
-        byte[] Header = StructToByte(new PACKET_HEADER(1, Buffer.Length));        
+        byte[] Header = StructToByte(new PACKET_HEADER(1, buffer.Length));        
 
-        Array.Copy(Header, 0, Buffer, 0, Header.Length);
-        Array.Copy(data, 0, Buffer, Header.Length, data.Length);
-
-        client.BeginSend(Buffer, 0, Buffer.Length, SocketFlags.None,
+        Array.Copy(Header, 0, buffer, 0, Header.Length);
+        Array.Copy(data, 0, buffer, Header.Length, data.Length);
+        
+        
+        client.BeginSend(buffer, 0, buffer.Length, SocketFlags.None,
             new AsyncCallback(SendCallback), client);
     }
 
@@ -235,7 +238,10 @@ public class AsyncClient : MonoBehaviour
                 tempPNC = ByteToStruct<PKT_NOTICE_CHAT>(tempByte, Marshal.SizeOf<PKT_NOTICE_CHAT>());
                 Array.Clear(tempByte, 0, tempByte.Length);
 
-                jsonmgr.CreateJsonFile(datapath, "Displayer", new string(tempPNC.szMessage));
+                string msg = new string(tempPNC.szMessage);
+                string[] DummyMsg = msg.Split('\0');
+
+                jsonmgr.CreateJsonFile(datapath, "Displayer", DummyMsg[0]);
                 return;
         }
     }

@@ -94,6 +94,8 @@ public class PlayerController : MonoBehaviour
         // 정리된 내용을 Json으로 변경
         string jsonData = jsonMgr.ObjectToJson(json);
 
+        jsonData += '\0';
+
         // (Test) Json파일 생성
         jsonMgr.CreateJsonFile(sDataPath, "DisPlayer", jsonData);
 

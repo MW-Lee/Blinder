@@ -11,9 +11,12 @@ using UnityEngine;
 
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
+
 
 public class JsonMgr
 {
+    // Object Serialized
     public string ObjectToJson(object obj)
     {
         return JsonUtility.ToJson(obj);
@@ -39,6 +42,8 @@ public class JsonMgr
         filestream.Read(data, 0, data.Length);
         filestream.Close();
         string jsonData = Encoding.UTF8.GetString(data);
-        return JsonUtility.FromJson<T>(jsonData);
+        //return JsonUtility.FromJson<T>(jsonData);
+
+        return JsonConvert.DeserializeObject<T>(jsonData);
     }
 }
