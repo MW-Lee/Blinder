@@ -97,13 +97,12 @@ public class PlayerController : MonoBehaviour
         jsonData += '\0';
 
         // (Test) Json파일 생성
-        jsonMgr.CreateJsonFile(sDataPath, "DisPlayer", jsonData);
+        //jsonMgr.CreateJsonFile(sDataPath, "DisPlayer", jsonData);
 
         // 변경된 Json을 치환
         byte[] data = Encoding.UTF8.GetBytes(jsonData);
 
         // 쏘세요!
-        //TransportTCP.instance.Send(data, data.Length);
         AsyncClient.instance.Send(data, 6);
     }
 
@@ -124,7 +123,8 @@ public class PlayerController : MonoBehaviour
         fMoveSpeed = 1.0f;
         fRotSpeed = 30.0f;
 
-        sDataPath = Application.dataPath + "/Resources";
+        //sDataPath = Application.dataPath + "/Resources";
+        sDataPath = Application.streamingAssetsPath;
 
         fOldTime = .2f;
         fCurTime = .0f;
@@ -171,69 +171,3 @@ public class PlayerController : MonoBehaviour
         #endregion
     }
 }
-
-// CHY ver.
-//public class PlayerController : MonoBehaviour
-//{
-//    // 이동, 회전 관련 변수.
-//    private float horizontal = 0.0f;
-
-//    private float vertical = 0.0f;
-
-//    private float rotate = 0.0f;
-
-//    public float moveSpeed = 0.0f;
-
-//    public float rotSpeed = 0.0f;
-
-//    public Vector3 vDir = new Vector3();
-
-//    private new Transform transform = null;
-
-//    // 시간 관련 변수.
-//    private float oldTime = 0.2f;
-//    private float curTime = 0.0f;
-
-//    // 서버 관련 변수.
-//    JsonMgr jsonMgr = new JsonMgr();
-
-//    State state = State.Idle;
-
-//    protected string dataPath;
-
-//    private void Start()
-//    {
-//        transform = GetComponent<Transform>();
-
-//        vDir = Vector3.zero;    
-
-//        dataPath = Application.dataPath + "/Resources/Json";
-//    }
-
-//    private void Update()
-//    {
-//        curTime += Time.deltaTime;
-
-//        horizontal = Input.GetAxis("Horizontal");
-//        vertical = Input.GetAxis("Vertical");
-//        rotate = Input.GetAxis("Mouse X");
-
-//        Vector3 moveDir = (Vector3.forward * vertical) + (Vector3.right * horizontal);
-
-//        transform.Translate(moveDir.normalized * moveSpeed * Time.deltaTime);
-
-//        transform.Rotate(Vector3.up * rotate * rotSpeed * Time.deltaTime);
-
-//        state = horizontal != 0 || vertical != 0 ? State.Walk : State.Idle;
-
-//        vDir = new Vector3(horizontal, 0, vertical);
-
-//        if (curTime >= oldTime)
-//        {
-//            curTime -= oldTime;
-//            //JsonOverWirte();
-//        }
-//    }
-
-
-//}

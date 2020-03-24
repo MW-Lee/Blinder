@@ -82,7 +82,7 @@ public class ThreadingTimer
 /// <summary>
 /// 서버에서 주고받을 Packet의 Header 구조체
 /// </summary>
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
 public struct PACKET_HEADER
 {
     // c++ 에서 short = 2byte c# 에서는 4byte 이므로 int 형으로 변경
@@ -113,7 +113,7 @@ public struct PACKET_HEADER
 /// <summary>
 /// 받은 Packet이 Chat일 때 사용하기 위한 구조체
 /// </summary>
-[StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential, Size = 529)]
 public struct PKT_NOTICE_CHAT
 {
     /// <summary>

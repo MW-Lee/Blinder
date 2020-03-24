@@ -56,7 +56,9 @@ public class AsyncClient : MonoBehaviour
 
         Connect(ipep, socket);
 
-        datapath = Application.dataPath + "/Resources/Json";
+        //datapath = Application.dataPath + "/Resources/Json";
+        //datapath = Application.streamingAssetsPath + "/Json";
+        datapath = Application.persistentDataPath;
     }
 
     private void Update()

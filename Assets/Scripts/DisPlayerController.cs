@@ -123,7 +123,9 @@ public class DisPlayerController : MonoBehaviour
         fMoveSpeed = 1.0f;
         fRotSpeed = 30.0f;
 
-        sDataPath = Application.dataPath + "/Resources/Json";
+        //sDataPath = Application.dataPath + "/Resources/Json";
+        //sDataPath = Application.streamingAssetsPath + "/Json";
+        sDataPath = Application.persistentDataPath;
 
         fOldTime = .2f;
         fCurTime = .0f;
@@ -165,5 +167,5 @@ public class DisPlayerController : MonoBehaviour
         }
     }
 
-    #endregion
+#endregion
 }
